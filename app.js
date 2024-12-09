@@ -73,6 +73,33 @@ connectToDatabase()
       }
     });
 
+    app.put('/products/:id', async (req, res) => {
+      try {
+        const db = getDB();
+
+        const id = req.params.id;
+        const newData = req.body;
+
+        if (!ObjectId.isValid(id)) {
+          return res.status(400).json({ message: 'Invalid product id' });
+        }
+
+        const result = await db
+          .collection('products')
+          .updateOne({ _id: new ObjectId(id) }, { $set: newData });
+
+        if (result.matchedCount === 0) {
+          return res.status(404).json({ message: 'Product not found' });
+        }
+
+        res.status(200).json({ message: 'Product update successfully' });
+      } catch (error) {
+        res
+          .status(500)
+          .json({ message: `Failed to update product: ${error.message}` });
+      }
+    });
+
     app.listen(port, () => {
       console.log(`Server is running on http://localhost:${port}`);
     });
